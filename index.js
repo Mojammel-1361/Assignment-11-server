@@ -28,6 +28,7 @@ async function run(){
         const serviceCollection = client.db('Doctor').collection('services');
 
         const reviewCollection = client.db("Doctor").collection("reviews");
+        
         app.get('/reviews', async(req, res) =>{
             let query = {};
             if(req.query.email){
@@ -40,6 +41,27 @@ async function run(){
             res.send(reviews);
 
         })
+
+        app.get("/reviews-service", async (req, res) => {
+          let query = {};
+          console.log(req.query.service)
+          if (req.query.service) {
+            query = {
+              service: req.query.service,
+            };
+          }
+          const cursor = reviewCollection.find(query);
+          const reviews = await cursor.toArray();
+          res.send(reviews);
+        });
+
+
+
+
+
+
+
+
         app.post("/reviews", async (req, res) => {
           const review = req.body;
           const result = await reviewCollection.insertOne(review);
@@ -72,7 +94,8 @@ async function run(){
         const result = await reviewCollection.deleteOne(query);
         res.send(result);
        });
-
+        // comment 
+       
        
        
     }
