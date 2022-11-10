@@ -42,26 +42,6 @@ async function run(){
 
         })
 
-        app.get("/reviews-service", async (req, res) => {
-          let query = {};
-          console.log(req.query.service)
-          if (req.query.service) {
-            query = {
-              service: req.query.service,
-            };
-          }
-          const cursor = reviewCollection.find(query);
-          const reviews = await cursor.toArray();
-          res.send(reviews);
-        });
-
-
-
-
-
-
-
-
         app.post("/reviews", async (req, res) => {
           const review = req.body;
           const result = await reviewCollection.insertOne(review);
@@ -80,6 +60,21 @@ async function run(){
          const services = await cursor.toArray();
          res.send(services);
        });
+
+       
+    //    all comments 
+       app.get("/allRevievs", async (req, res) => {
+         const query = {};
+         const cursor = reviewCollection.find(query);
+         const reviews = await cursor.toArray();
+         res.send(reviews);
+       });
+
+
+
+
+
+
 
        app.get('/services/:id', async (req, res) => {
          const id = req.params.id;
