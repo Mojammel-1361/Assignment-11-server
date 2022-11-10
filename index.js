@@ -1,10 +1,10 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 const app = express();
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const { ObjectID } = require('bson');
+const { ObjectID } = require("bson");
 
-require('dotenv').config();
+require("dotenv").config();
 
 const port = process.env.PORT || 6600;
 //user4
@@ -12,9 +12,7 @@ const port = process.env.PORT || 6600;
 app.use(cors());
 app.use(express.json());
 
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.pqymyou.mongodb.net/?retryWrites=true&w=majority`;
-
 
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -22,91 +20,73 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-async function run(){
+async function run() {
+  try {
+    const serviceCollection = client.db("Doctor").collection("services");
 
-    try{
-        const serviceCollection = client.db('Doctor').collection('services');
+    const reviewCollection = client.db("Doctor").collection("reviews");
 
-        const reviewCollection = client.db("Doctor").collection("reviews");
-        
-        app.get('/reviews', async(req, res) =>{
-            let query = {};
-            if(req.query.email){
-                query = {
-                  email: req.query.email
-                };
-            }
-            const cursor = reviewCollection.find(query);
-            const reviews = await cursor.toArray();
-            res.send(reviews);
+    app.get("/reviews", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = {
+          email: req.query.email,
+        };
+      }
+      const cursor = reviewCollection.find(query);
+      const reviews = await cursor.toArray();
+      res.send(reviews);
+    });
 
-        })
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
 
-        app.post("/reviews", async (req, res) => {
-          const review = req.body;
-          const result = await reviewCollection.insertOne(review);
-          res.send(result);
-        });
+    app.get("/services", async (req, res) => {
+      const query = {};
+      const cursor = serviceCollection.find(query);
+      const services = await cursor.limit(3).toArray();
+      res.send(services);
+    });
+    app.get("/servicesAll", async (req, res) => {
+      const query = {};
+      const cursor = serviceCollection.find(query);
+      const services = await cursor.toArray();
+      res.send(services);
+    });
 
-       app.get('/services', async(req, res) =>{
-        const query ={};
-        const cursor = serviceCollection.find(query);
-        const services = await cursor.limit(3).toArray();
-        res.send(services);
-       });
-       app.get("/servicesAll", async (req, res) => {
-         const query = {};
-         const cursor = serviceCollection.find(query);
-         const services = await cursor.toArray();
-         res.send(services);
-       });
+    app.get("/allRevievs", async (req, res) => {
+      const query = {};
+      const cursor = reviewCollection.find(query);
+      const reviews = await cursor.toArray();
+      res.send(reviews);
+    });
 
+    app.get("/services/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectID(id) };
+      const service = await serviceCollection.findOne(query);
+      res.send(service);
+    });
 
-    
-       app.get("/allRevievs", async (req, res) => {
-         const query = {};
-         const cursor = reviewCollection.find(query);
-         const reviews = await cursor.toArray();
-         res.send(reviews);
-       });
-
-
-
-
-
-
-
-       app.get('/services/:id', async (req, res) => {
-         const id = req.params.id;
-         const query = { _id: ObjectID(id) };
-         const service = await serviceCollection.findOne(query);
-         res.send(service);
-       });
-
-       app.delete("/reviews/:id", async(req, res) =>{
-        const id = req.params.id;
-        const query = {_id: ObjectID(id)};
-        const result = await reviewCollection.deleteOne(query);
-        res.send(result);
-       });
-        // comment 
-       
-       
-       
-    }
-    finally{
-
-    }
-    
+    app.delete("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectID(id) };
+      const result = await reviewCollection.deleteOne(query);
+      res.send(result);
+    });
+    // comment
+  } finally {
+  }
 }
 run().catch((error) => console.error(error));
 
+app.get("/", (req, res) => {
+  res.send("doctor server in running");
+});
 
-
-app.get('/', (req, res) =>{
-    res.send('doctor server in running')
-})
-
-app.listen(port, () =>{
-    console.log(`server running on ${port}`);
-})
+app.listen(port, () => {
+  console.log(`server running on ${port}`);
+});
