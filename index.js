@@ -61,8 +61,8 @@ async function run(){
          res.send(services);
        });
 
-       
-    //    all comments 
+
+    
        app.get("/allRevievs", async (req, res) => {
          const query = {};
          const cursor = reviewCollection.find(query);
